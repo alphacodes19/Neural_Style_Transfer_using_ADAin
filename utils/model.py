@@ -3,8 +3,8 @@ import torch
 
 class VGGEncoder(nn.Module):
     def __init__(self, vgg_path):
-        super(VGGEncoder. self).__init__()
-        
+        super(VGGEncoder, self).__init__()
+
         self.vgg = nn.Sequential(
             nn.Conv2d(3, 3, (1, 1)),
             nn.ReflectionPad2d((1, 1, 1, 1)),
@@ -67,27 +67,25 @@ class VGGEncoder(nn.Module):
         self.enc_2 = nn.Sequential(*enc_layers[4:11])
         self.enc_3 = nn.Sequential(*enc_layers[11:18])
         self.enc_4 = nn.Sequential(*enc_layers[18:31])
-        
+
         for name in ['enc_1', 'enc_2', 'enc_3', 'enc_4']:
             for param in getattr(self, name).parameters():
                 param.requires_grad = False
-        
-        for p in self.enc_1.parameters():
-            p.requires_grad = False
-            
-    def forward(self, input):
+
+    def forward(self, input, is_test=False):
         h1 = self.enc_1(input)
         h2 = self.enc_2(h1)
         h3 = self.enc_3(h2)
-        h4 = self.enc_4(h4)
+        h4 = self.enc_4(h3)
         if is_test:
             return h4
         return h1, h2, h3, h4
-    
+
+
 class Decoder(nn.Module):
     def __init__(self):
         super(Decoder, self).__init__()
-        self.decoder = nn.Sequential(
+        self.net = nn.Sequential(
             nn.ReflectionPad2d((1, 1, 1, 1)),
             nn.Conv2d(512, 256, (3, 3)),
             nn.ReLU(),
@@ -118,6 +116,10 @@ class Decoder(nn.Module):
             nn.ReflectionPad2d((1, 1, 1, 1)),
             nn.Conv2d(64, 3, (3, 3)),         
         )
-        
+
     def forward(self, input):
-        return self.decoder(input)
+        return self.net(input)
+
+
+
+
