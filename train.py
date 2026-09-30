@@ -35,6 +35,10 @@ def parse_arguments():
     
     parser.add_argument('--epochs', type = int, default = 2, help = 'Number of epochs')
     
+    parser.add_argument('--log_interval', type = int, default = 10, help = 'Log interval')
+    
+    parser.add_argument('--save_interval', type = int, default = 2, help = 'Save interval')
+    
     return parser.parse_args()
 
 
@@ -122,6 +126,8 @@ def main():
             loss.backward()
             optimizer.step()
             
+            progress_bar.set_description(f'Loss:{Loss.item():4f}, Content Loss: {loss_c.item():4f}, Style Loss: {loss_s.item():4f}')
+            
             running_loss += loss.item()
             running_closs += loss_c.item()
             running_sloss += loss_s.item()
@@ -133,8 +139,15 @@ def main():
         running_sloss /= len(content_dataloader)
         
         if (epoch+1) % args.log_interval == 0:
-            tqdm.write(f'Iter {epoch + 1} : Loss')
+            tqdm.write(f'Iter {epoch + 1} : Loss:{running_loss:4f}, Content Loss: {running_closs:4f}, Style Loss:{running_sloss:4f}')
             
+        if (epoch+1) % args.save_interval == 0:
+            torch.save(decoder.state_dict(), save_dir / f'decoder {epoch + 1}.pth')
+            torch.save(optimizer.state_dict(), save_dir / f'optimizer {epoch+1}.pth')
+            
+            with torch.no_grad():
+                output = torch.cat([content_batch, style_batch, g], dim = 0)
+                save_image(output, save_dir / f'output_{epoch+1}.png', nrow = args.batch_size)
             
             
             
