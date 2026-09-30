@@ -35,9 +35,16 @@ def parse_arguments():
     
     parser.add_argument('--epochs', type = int, default = 2, help = 'Number of epochs')
     
-    parser.add_argument('--log_interval', type = int, default = 10, help = 'Log interval')
+    parser.add_argument('--log_interval', type = int, default = 1, help = 'Log interval')
     
     parser.add_argument('--save_interval', type = int, default = 2, help = 'Save interval')
+    
+    parser.add_argument('--resume', action = 'store_true', default = False, help = 'Resume Training')
+    
+    parser.add_argument('--decoder_path', type = str, default = None, help = 'Path to decoder checkpoint')
+    
+    parser.add_argument('--optimizer_path', type = str, default = None, help = 'Path to optimizer checkpoint')
+    
     
     return parser.parse_args()
 
@@ -77,6 +84,12 @@ def main():
         optimizer,
         lr_lambda=lambda epoch: 1.0 / (1.0 + args.lr_decay * epoch)
     )
+    
+    if args.resume:
+        decoder.load_state_dict(torch.load(args.decoder_path))
+        optimizer.load_state_dict(torch.load(args.optimizer_path))
+        
+    print('Training')
     
     mse_loss = torch.nn.MSELoss()
     
