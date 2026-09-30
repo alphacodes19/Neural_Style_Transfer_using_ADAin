@@ -5,6 +5,7 @@ import torch.optim as optim
 from pathlib import Path
 from utils.utils import *
 from utils.models import *
+from tqdm import tqdm
 
 
 def parse_arguments():
@@ -31,6 +32,8 @@ def parse_arguments():
     parser.add_argument('--lr', type = float, default = le-4, help = 'Learning Rate')
     
     parser.add_argument('--lr_decay', type = float, default = 5e-5, help = 'Learning rate decay')
+    
+    parser.add_argument('--epochs', type = int, default = 2, help = 'Number of epochs')
     
     return parser.parse_args()
 
@@ -71,7 +74,28 @@ def main():
         lr_lambda=lambda epoch: 1.0 / (1.0 + args.lr_decay * epoch)
     )
     
+    mse_loss = torch.nn.MSELoss()
     
+    encoder.eval()
+    
+    running_loss = None
+    running_class = None
+    running_sloss = None
+    
+    
+    for epoch in range(args.epochs):
+        progress_bar = tqdm(zip(content_dataloader, style_dataloader),
+                            total = min(len(content_dataloader), len(style_dataloader)))
+        
+        for content_batch, style_batch in progress_bar:
+            content_batch = content_batch.to(device)
+            style_batch = style_batch.to(device)
+            
+            c_feats = encoder(content_batch)
+            s_feats = encoder(style_batch)
+            
+             
+            
     
 
 if __name__ == '__main__':
