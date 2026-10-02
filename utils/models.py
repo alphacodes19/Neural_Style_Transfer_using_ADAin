@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch
 
 class VGGEncoder(nn.Module):
-    def __init__(self, vgg_path):
+    def __init__(self, vgg_path, map_location=None):
         super(VGGEncoder, self).__init__()
 
         self.vgg = nn.Sequential(
@@ -60,7 +60,7 @@ class VGGEncoder(nn.Module):
             nn.Conv2d(512, 512, (3, 3)),
             nn.ReLU()  # relu5-4
         )
-        self.vgg.load_state_dict(torch.load(vgg_path))
+        self.vgg.load_state_dict(torch.load(vgg_path, map_location=map_location))
         self.vgg = nn.Sequential(*list(self.vgg.children())[:31])
         enc_layers = list(self.vgg.children())
         self.enc_1 = nn.Sequential(*enc_layers[:4])

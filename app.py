@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import torch
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from flask_wtf import FlaskForm
@@ -33,9 +34,30 @@ class UploadForm(FlaskForm):
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-encoder = VGGEncoder('vgg_normalised.pth').to(device)
+# Weight paths are configurable via environment variables so the app is not
+# tied to any one machine. Defaults point at the project-relative weights/
+# directory established by the Phase 1 checkpoint convention.
+PROJECT_ROOT = Path(__file__).resolve().parent
+VGG_PATH = Path(os.environ.get('VGG_PATH', PROJECT_ROOT / 'weights' / 'vgg_normalised.pth'))
+DECODER_PATH = Path(os.environ.get('DECODER_PATH', PROJECT_ROOT / 'weights' / 'decoder_final.pth'))
+
+if not VGG_PATH.is_file():
+    raise FileNotFoundError(
+        f"VGG weights not found: {VGG_PATH}\n"
+        "Set the VGG_PATH environment variable or place the file at "
+        "weights/vgg_normalised.pth."
+    )
+if not DECODER_PATH.is_file():
+    raise FileNotFoundError(
+        f"Decoder weights not found: {DECODER_PATH}\n"
+        "Set the DECODER_PATH environment variable, or train a decoder "
+        "(see train.py) which saves to experiment/<name>/decoder_final.pth, "
+        "then copy/symlink it to weights/decoder_final.pth."
+    )
+
+encoder = VGGEncoder(str(VGG_PATH), map_location=device).to(device)
 decoder = Decoder().to(device)
-decoder.load_state_dict(torch.load('/home/ubuntu/Desktop/NST_Code/experiment/final_exp/decoder_final.pth'))
+decoder.load_state_dict(torch.load(str(DECODER_PATH), map_location=device))
 
 encoder.eval()
 decoder.eval()

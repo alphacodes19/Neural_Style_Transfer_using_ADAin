@@ -1,0 +1,30 @@
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Model weights / checkpoints
+weights/
+*.pth
+*.pt
+
+# Experiment / training outputs
+experiment/
+experiment*/
+
+# Uploaded / generated images
+static/uploads/
+
+# Dataset directories
+data/
+content_data/
+style_data/
+
+# Environment / secrets
+.env

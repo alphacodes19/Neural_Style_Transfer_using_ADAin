@@ -12,12 +12,12 @@ from torchvision.utils import save_image
 def parse_arguments():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--content_dir', type=str, default='/home/ubuntu/Desktop/NST_Code/content_data',
-                        help='Location of content dataset')
-    parser.add_argument('--style_dir', type=str, default='/home/ubuntu/Desktop/NST_Code/style_data',
-                        help='Location of style dataset')
-    parser.add_argument('--vgg', type=str, default='/home/ubuntu/Desktop/NST_Code/vgg_normalised.pth',
-                        help='Location of pre-trained VGG')
+    parser.add_argument('--content_dir', type=str, required=True,
+                        help='Location of content dataset (required, no machine-specific default)')
+    parser.add_argument('--style_dir', type=str, required=True,
+                        help='Location of style dataset (required, no machine-specific default)')
+    parser.add_argument('--vgg', type=str, default=str(Path('weights') / 'vgg_normalised.pth'),
+                        help='Location of pre-trained VGG (default: weights/vgg_normalised.pth)')
     parser.add_argument('--experiment', type=str, default='experiment1',
                         help='Name of experiment')
     
@@ -96,7 +96,13 @@ def main():
     print('Number of batches in content dataset: ', len(content_dataloader))
     print('Number of batches in style dataset: ', len(style_dataloader))
     
-    encoder = VGGEncoder(args.vgg).to(device)
+    if not Path(args.vgg).is_file():
+        raise FileNotFoundError(
+            f"VGG weights not found: {args.vgg}\n"
+            "Pass --vgg pointing at vgg_normalised.pth, or place it at "
+            "weights/vgg_normalised.pth."
+        )
+    encoder = VGGEncoder(args.vgg, map_location=device).to(device)
     decoder = Decoder().to(device)
 
     optimizer = optim.Adam(decoder.parameters(), lr=args.lr)
@@ -106,8 +112,20 @@ def main():
     )
 
     if args.resume:
-        decoder.load_state_dict(torch.load(args.decoder_path))
-        optimizer.load_state_dict(torch.load(args.optimizer_path))
+        if not args.decoder_path or not Path(args.decoder_path).is_file():
+            raise FileNotFoundError(
+                f"--resume was given but decoder checkpoint was not found: "
+                f"{args.decoder_path!r}. Pass --decoder_path pointing at an "
+                "existing decoder_latest.pth / decoder_final.pth."
+            )
+        if not args.optimizer_path or not Path(args.optimizer_path).is_file():
+            raise FileNotFoundError(
+                f"--resume was given but optimizer checkpoint was not found: "
+                f"{args.optimizer_path!r}. Pass --optimizer_path pointing at an "
+                "existing checkpoint_latest.pth."
+            )
+        decoder.load_state_dict(torch.load(args.decoder_path, map_location=device))
+        optimizer.load_state_dict(torch.load(args.optimizer_path, map_location=device))
 
     print('Training...')
 
@@ -173,14 +191,18 @@ def main():
             tqdm.write(f'Iter {epoch+1}: Loss:{running_loss:4f}, Content Loss: {running_closs:4f}, Style Loss: {running_sloss:4f}')
 
         if (epoch+1) % args.save_interval == 0:
-            torch.save(decoder.state_dict(), save_dir / f'decoder_{epoch+1}.pth')
-            torch.save(optimizer.state_dict(), save_dir / f'optimizer_{epoch+1}.pth')
+            torch.save(decoder.state_dict(), save_dir / 'decoder_latest.pth')
+            torch.save(optimizer.state_dict(), save_dir / 'checkpoint_latest.pth')
 
             with torch.no_grad():
                 output = torch.cat([content_batch, style_batch, g], dim=0)
                 save_image(output, save_dir / f'output_{epoch+1}.png', nrow=args.batch_size)
 
-
+    # Phase 1 checkpoint contract: a final decoder checkpoint must always exist
+    # after training, even if epochs is small or save_interval was never hit.
+    torch.save(decoder.state_dict(), save_dir / 'decoder_final.pth')
+    torch.save(optimizer.state_dict(), save_dir / 'checkpoint_final.pth')
+    print(f'Saved final decoder checkpoint to {save_dir / "decoder_final.pth"}')
 
 
 if __name__ == '__main__':

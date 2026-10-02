@@ -1,0 +1,13 @@
+# Core deps needed to run the Flask app (app.py) and for training (train.py).
+torch
+torchvision
+Pillow
+
+# --- Deployment (Flask app) only ---
+Flask
+Flask-WTF
+Flask-Bootstrap
+WTForms
+
+# --- Training (train.py) only ---
+tqdm
