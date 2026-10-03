@@ -5,6 +5,7 @@ import torch.optim as optim
 from pathlib import Path
 from utils.utils import *
 from utils.models import *
+from utils.data_prep import load_split_manifests
 from tqdm import tqdm
 from torchvision.utils import save_image
 
@@ -12,10 +13,15 @@ from torchvision.utils import save_image
 def parse_arguments():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--content_dir', type=str, required=True,
-                        help='Location of content dataset (required, no machine-specific default)')
-    parser.add_argument('--style_dir', type=str, required=True,
-                        help='Location of style dataset (required, no machine-specific default)')
+    parser.add_argument('--manifest_dir', type=str, default=None,
+                        help='Directory with content_train/val.txt and style_train/val.txt '
+                             '(from prepare_data.py). Preferred over --content_dir/--style_dir.')
+    parser.add_argument('--content_dir', type=str, default=None,
+                        help='Content image folder (searched recursively); used if no --manifest_dir')
+    parser.add_argument('--style_dir', type=str, default=None,
+                        help='Style image folder (searched recursively); used if no --manifest_dir')
+    parser.add_argument('--num_workers', type=int, default=4,
+                        help='DataLoader worker processes')
     parser.add_argument('--vgg', type=str, default=str(Path('weights') / 'vgg_normalised.pth'),
                         help='Location of pre-trained VGG (default: weights/vgg_normalised.pth)')
     parser.add_argument('--experiment', type=str, default='experiment1',
@@ -61,7 +67,10 @@ def parse_arguments():
                         help='Path to optimizer checkpoint')
     
 
-    return parser.parse_args()
+    args = parser.parse_args()
+    if not args.manifest_dir and not (args.content_dir and args.style_dir):
+        parser.error('provide --manifest_dir, or both --content_dir and --style_dir')
+    return args
 
 
 def main():
@@ -79,19 +88,27 @@ def main():
     content_transform = get_transform(args.content_size, args.crop, args.final_size)
     style_transform = get_transform(args.style_size, args.crop, args.final_size)
     
-    content_dataset = ImageFolderDataset(args.content_dir, content_transform)
-    style_dateset = ImageFolderDataset(args.style_dir, style_transform)
+    if args.manifest_dir:
+        splits = load_split_manifests(args.manifest_dir)
+        content_dataset = ImageFolderDataset(splits['content_train'], content_transform)
+        style_dateset = ImageFolderDataset(splits['style_train'], style_transform)
+        counts = {k: len(v) for k, v in splits.items()}
+        print(f'Manifests: {args.manifest_dir}')
+    else:
+        content_dataset = ImageFolderDataset(args.content_dir, content_transform)
+        style_dateset = ImageFolderDataset(args.style_dir, style_transform)
+        counts = {'content_train': len(content_dataset), 'content_val': 'n/a (no manifest)',
+                  'style_train': len(style_dateset), 'style_val': 'n/a (no manifest)'}
+    print(f"Content train: {counts['content_train']}")
+    print(f"Content val:   {counts['content_val']}")
+    print(f"Style train:   {counts['style_train']}")
+    print(f"Style val:     {counts['style_val']}")
 
-    content_dataloader = DataLoader(content_dataset,
-                                    batch_size=args.batch_size,
-                                    shuffle = True,
-                                    pin_memory=True,
-                                    drop_last=True)
-    style_dataloader = DataLoader(style_dateset,
-                                  batch_size=args.batch_size,
-                                  shuffle=True,
-                                  pin_memory=True,
-                                  drop_last=True)
+    loader_kwargs = dict(batch_size=args.batch_size, shuffle=True, pin_memory=True,
+                         drop_last=True, num_workers=args.num_workers,
+                         persistent_workers=args.num_workers > 0)
+    content_dataloader = DataLoader(content_dataset, **loader_kwargs)
+    style_dataloader = DataLoader(style_dateset, **loader_kwargs)
     
     print('Number of batches in content dataset: ', len(content_dataloader))
     print('Number of batches in style dataset: ', len(style_dataloader))

@@ -1,23 +1,48 @@
 from torch.utils.data import Dataset
 import os
 from PIL import Image
+from utils.data_prep import discover_images, load_rgb, read_manifest
 from torchvision import transforms
 
 
 class ImageFolderDataset(Dataset):
-    def __init__(self, root, transform = None):
+    """Images from a manifest (.txt, one path per line), a list of paths, or a
+    directory (searched recursively, case-insensitive extensions).
+
+    All images are loaded fully and converted to RGB (RGBA composited on white).
+    Originals are never modified.
+    """
+
+    def __init__(self, source, transform=None, max_retries=5):
         super(ImageFolderDataset, self).__init__()
-        self.root = root
         self.transform = transform
-        self.files = list(os.listdir(root))
-        self.files = [p for p in self.files if p.endswith(('.jpg', '.png', '.jpeg'))]
+        self.max_retries = max_retries
+        if isinstance(source, (list, tuple)):
+            self.files = [str(p) for p in source]
+        elif os.path.isfile(str(source)):
+            self.files = read_manifest(source)
+        else:
+            self.files, _ = discover_images(source)
+        if not self.files:
+            raise ValueError(f'No images found for source: {source}')
 
     def __len__(self):
         return len(self.files)
 
     def __getitem__(self, idx):
-        image_path = os.path.join(self.root, self.files[idx])
-        image = Image.open(image_path).convert('RGB')
+        # Manifests are pre-validated, so failures should be rare (e.g. a file
+        # deleted after preparation). Never fail silently: warn, then try the
+        # next image so one bad file cannot kill a long run.
+        for attempt in range(self.max_retries):
+            image_path = self.files[(idx + attempt) % len(self.files)]
+            try:
+                image = load_rgb(image_path)
+                break
+            except Exception as exc:  # noqa: BLE001
+                print(f'[ImageFolderDataset] WARNING: could not load {image_path}: {exc!r}',
+                      flush=True)
+        else:
+            raise RuntimeError(f'{self.max_retries} consecutive unreadable images from index {idx}')
 
         if self.transform:
             image = self.transform(image)

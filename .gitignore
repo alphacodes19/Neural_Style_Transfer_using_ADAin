@@ -25,6 +25,11 @@ static/uploads/
 data/
 content_data/
 style_data/
+# Datasets
+NST_datasets/
+data/
+content_data/
+style_data/
 
 # Environment / secrets
 .env
