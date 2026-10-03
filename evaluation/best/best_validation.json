@@ -1,0 +1,35 @@
+{
+  "selected": "phase3_test_checkpoint_final",
+  "source_path": "D:\\Neural_Style_Transfer_using_ADAin\\experiment\\phase3_test\\checkpoint_final.pth",
+  "iteration": 120,
+  "selected_total_loss": 34.34566867351532,
+  "objective": "lowest mean total_loss (content_loss + style_loss, alpha = 1, training loss definitions and weights) over the fixed evaluation set",
+  "eligibility": "integrity gate: no non-finite outputs, no all-black outputs, no constant outputs",
+  "reason": "phase3_test_checkpoint_final has the lowest mean total validation loss (34.345669) among 1 eligible of 1 checkpoint(s) evaluated in this run.",
+  "replaced_previous_best": null,
+  "weights": {
+    "content_weight": 1.0,
+    "style_weight": 5.0
+  },
+  "eval_set_id": "15323834144e",
+  "eval_seed": 42,
+  "num_pairs": 20,
+  "manifest_dir": ".\\data\\manifests_smoke",
+  "ranking": [
+    {
+      "rank": 1,
+      "checkpoint": "phase3_test_checkpoint_final",
+      "iteration": 120,
+      "total_loss": 34.34566867351532,
+      "content_loss": 3.427678036689758,
+      "style_loss_weighted": 30.91799063682556
+    }
+  ],
+  "excluded_by_integrity_gate": [],
+  "caveats": [
+    "best_validation is persistent: a later run only replaces it if it is better on the same evaluation set and loss weights. Nothing is ever deleted.",
+    "Validation loss is a proxy for quality. Inspect grid_alpha_sweep.png before final selection.",
+    "best_validation.pth is only written when the source is a full checkpoint (decoder-only files give best_validation_decoder.pth only)."
+  ],
+  "selected_at": "2026-10-04T01:05:06"
+}

@@ -1,0 +1,2 @@
+checkpoint,iteration,content_loss,style_loss,style_loss_raw,total_loss,n_nonfinite_outputs,n_black_outputs,n_constant_outputs,n_range_warnings,integrity_ok,eval_set_id,inference_ms_256,peak_mem_mb_256,inference_ms_512,peak_mem_mb_512,inference_ms_1024,peak_mem_mb_1024,rank_by_total_loss
+phase3_test_checkpoint_final,120,3.427678036689758,30.91799063682556,6.183598127365112,34.34566867351532,0,0,0,23,1,15323834144e,23.48,100.3,85.12,321.1,334.83,1143.0,1
