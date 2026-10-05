@@ -1,0 +1,566 @@
+{
+  "checkpoint": "D:\\Neural_Style_Transfer_using_ADAin\\experiment\\full_training_160k\\best_checkpoint.pth",
+  "name": "full_training_160k_best_checkpoint",
+  "checkpoint_sha256_prefix": "4962df41302000b1",
+  "iteration": 160000,
+  "trained_with_seed": 42,
+  "full_checkpoint": true,
+  "eval_seed": 42,
+  "eval_set_id": "80f98abb8a4f",
+  "manifest_dir": ".\\data\\manifests_final",
+  "num_pairs": 100,
+  "alphas": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "content_size": 512,
+  "final_size": 256,
+  "precision": "fp32",
+  "device": "cuda",
+  "torch_version": "2.13.0+cu130",
+  "weights": {
+    "content_weight": 1.0,
+    "style_weight": 5.0
+  },
+  "definitions": {
+    "content_loss": "content_weight * MSE(encoder(g)[relu4_1], AdaIN target)  (weighted)",
+    "style_loss": "style_weight * sum over relu1_1..relu4_1 of MSE(mean)+MSE(std)  (WEIGHTED, same as logged in train/val CSVs)",
+    "style_loss_raw": "style_loss / style_weight  (unweighted)",
+    "total_loss": "content_loss + style_loss, at alpha = 1",
+    "alpha_operation": "decoder(alpha * AdaIN(fc, fs) + (1 - alpha) * fc), clamp(0,1)  (same as app.py)"
+  },
+  "content_loss": 1.4063300624489785,
+  "style_loss": 3.1819556576013563,
+  "style_loss_raw": 0.6363911315202713,
+  "total_loss": 4.588285720050335,
+  "total_loss_std_over_pairs": 4.88263002221948,
+  "alpha1_vs_loss_path_max_abs_diff": 0.0,
+  "quality": {
+    "outputs_checked": 500,
+    "with_nonfinite": 0,
+    "black": 0,
+    "constant": 0,
+    "range_warnings": 28,
+    "integrity_ok": true
+  },
+  "benchmark": {
+    "256": {
+      "status": "ok",
+      "ms": 28.087640000740066,
+      "mem_mb": 100.31298828125
+    },
+    "512": {
+      "status": "ok",
+      "ms": 101.75757999968482,
+      "mem_mb": 321.13916015625
+    }
+  },
+  "benchmark_note": "seeded random inputs; one full stylization per run; GPU memory = peak allocated incl. weights",
+  "pairs": [
+    {
+      "pair": 0,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000005529.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\100161.jpg"
+    },
+    {
+      "pair": 1,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000021167.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\101032.jpg"
+    },
+    {
+      "pair": 2,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000022705.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\101076.jpg"
+    },
+    {
+      "pair": 3,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000025228.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\101169.jpg"
+    },
+    {
+      "pair": 4,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000027620.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\10139.jpg"
+    },
+    {
+      "pair": 5,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000027768.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\101788.jpg"
+    },
+    {
+      "pair": 6,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000039405.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\101862.jpg"
+    },
+    {
+      "pair": 7,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000041990.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\102870.jpg"
+    },
+    {
+      "pair": 8,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000051738.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\10353.jpg"
+    },
+    {
+      "pair": 9,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000061418.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\10374.jpg"
+    },
+    {
+      "pair": 10,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000064898.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\1075.jpg"
+    },
+    {
+      "pair": 11,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000066771.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\10869.jpg"
+    },
+    {
+      "pair": 12,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000075612.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\10908.jpg"
+    },
+    {
+      "pair": 13,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000076731.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\11134.jpg"
+    },
+    {
+      "pair": 14,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000083531.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\11305.jpg"
+    },
+    {
+      "pair": 15,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000088848.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\11373.jpg"
+    },
+    {
+      "pair": 16,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000089648.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\11643.jpg"
+    },
+    {
+      "pair": 17,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000092177.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\12112.jpg"
+    },
+    {
+      "pair": 18,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000097278.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\13210.jpg"
+    },
+    {
+      "pair": 19,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000098392.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\14198.jpg"
+    },
+    {
+      "pair": 20,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000098520.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\14334.jpg"
+    },
+    {
+      "pair": 21,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000107554.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\14642.jpg"
+    },
+    {
+      "pair": 22,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000121673.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\16036.jpg"
+    },
+    {
+      "pair": 23,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000134322.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\16161.jpg"
+    },
+    {
+      "pair": 24,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000137727.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\16589.jpg"
+    },
+    {
+      "pair": 25,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000150649.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\1673.jpg"
+    },
+    {
+      "pair": 26,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000154000.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\16862.jpg"
+    },
+    {
+      "pair": 27,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000156372.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\16901.jpg"
+    },
+    {
+      "pair": 28,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000157138.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\17031.jpg"
+    },
+    {
+      "pair": 29,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000163562.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\17284.jpg"
+    },
+    {
+      "pair": 30,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000181666.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\17514.jpg"
+    },
+    {
+      "pair": 31,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000186632.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\1791.jpg"
+    },
+    {
+      "pair": 32,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000195754.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\18794.jpg"
+    },
+    {
+      "pair": 33,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000197388.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\1942.jpg"
+    },
+    {
+      "pair": 34,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000199236.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\19458.jpg"
+    },
+    {
+      "pair": 35,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000201775.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_1\\train_1\\19958.jpg"
+    },
+    {
+      "pair": 36,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000205647.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_2\\train_2\\20086.jpg"
+    },
+    {
+      "pair": 37,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000206411.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_2\\train_2\\22019.jpg"
+    },
+    {
+      "pair": 38,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000207306.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_2\\train_2\\22094.jpg"
+    },
+    {
+      "pair": 39,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000210299.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_2\\train_2\\22197.jpg"
+    },
+    {
+      "pair": 40,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000214205.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_2\\train_2\\22503.jpg"
+    },
+    {
+      "pair": 41,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000215259.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_2\\train_2\\22811.jpg"
+    },
+    {
+      "pair": 42,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000219440.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_2\\train_2\\22872.jpg"
+    },
+    {
+      "pair": 43,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000219578.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_2\\train_2\\22961.jpg"
+    },
+    {
+      "pair": 44,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000230008.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_2\\train_2\\23331.jpg"
+    },
+    {
+      "pair": 45,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000230166.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_2\\train_2\\23673.jpg"
+    },
+    {
+      "pair": 46,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000231549.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_2\\train_2\\23697.jpg"
+    },
+    {
+      "pair": 47,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000249180.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_2\\train_2\\25484.jpg"
+    },
+    {
+      "pair": 48,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000249643.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_2\\train_2\\25580.jpg"
+    },
+    {
+      "pair": 49,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000252294.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_2\\train_2\\26687.jpg"
+    },
+    {
+      "pair": 50,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000252776.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_2\\train_2\\26848.jpg"
+    },
+    {
+      "pair": 51,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000255718.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_2\\train_2\\27055.jpg"
+    },
+    {
+      "pair": 52,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000260657.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_2\\train_2\\2918.jpg"
+    },
+    {
+      "pair": 53,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000262938.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\30556.jpg"
+    },
+    {
+      "pair": 54,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000263068.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\31015.jpg"
+    },
+    {
+      "pair": 55,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000263299.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\3131.jpg"
+    },
+    {
+      "pair": 56,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000274272.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\31752.jpg"
+    },
+    {
+      "pair": 57,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000278749.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\32359.jpg"
+    },
+    {
+      "pair": 58,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000297085.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\32748.jpg"
+    },
+    {
+      "pair": 59,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000297578.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\32821.jpg"
+    },
+    {
+      "pair": 60,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000307145.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\33191.jpg"
+    },
+    {
+      "pair": 61,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000319617.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\33336.jpg"
+    },
+    {
+      "pair": 62,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000322895.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\34360.jpg"
+    },
+    {
+      "pair": 63,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000326128.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\34846.jpg"
+    },
+    {
+      "pair": 64,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000337055.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\35169.jpg"
+    },
+    {
+      "pair": 65,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000341681.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\353.jpg"
+    },
+    {
+      "pair": 66,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000343803.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\35642.jpg"
+    },
+    {
+      "pair": 67,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000346638.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\3647.jpg"
+    },
+    {
+      "pair": 68,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000350833.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\37124.jpg"
+    },
+    {
+      "pair": 69,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000358427.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\37312.jpg"
+    },
+    {
+      "pair": 70,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000359833.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\38135.jpg"
+    },
+    {
+      "pair": 71,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000360137.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\38358.jpg"
+    },
+    {
+      "pair": 72,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000360325.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\38420.jpg"
+    },
+    {
+      "pair": 73,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000374551.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\39040.jpg"
+    },
+    {
+      "pair": 74,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000378453.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\39528.jpg"
+    },
+    {
+      "pair": 75,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000397681.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_3\\train_3\\39947.jpg"
+    },
+    {
+      "pair": 76,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000400573.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\40030.jpg"
+    },
+    {
+      "pair": 77,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000401250.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\40044.jpg"
+    },
+    {
+      "pair": 78,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000426372.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\40737.jpg"
+    },
+    {
+      "pair": 79,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000430875.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\40811.jpg"
+    },
+    {
+      "pair": 80,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000436883.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\41247.jpg"
+    },
+    {
+      "pair": 81,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000437351.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\42971.jpg"
+    },
+    {
+      "pair": 82,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000439994.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\42998.jpg"
+    },
+    {
+      "pair": 83,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000473118.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\43047.jpg"
+    },
+    {
+      "pair": 84,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000477805.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\43835.jpg"
+    },
+    {
+      "pair": 85,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000507042.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\44112.jpg"
+    },
+    {
+      "pair": 86,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000508730.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\44577.jpg"
+    },
+    {
+      "pair": 87,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000517056.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\45140.jpg"
+    },
+    {
+      "pair": 88,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000517687.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\45434.jpg"
+    },
+    {
+      "pair": 89,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000523957.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\45696.jpg"
+    },
+    {
+      "pair": 90,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000529528.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\45780.jpg"
+    },
+    {
+      "pair": 91,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000533145.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\46274.jpg"
+    },
+    {
+      "pair": 92,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000533206.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\46797.jpg"
+    },
+    {
+      "pair": 93,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000540414.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\47961.jpg"
+    },
+    {
+      "pair": 94,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000550714.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\48232.jpg"
+    },
+    {
+      "pair": 95,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000562243.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\48604.jpg"
+    },
+    {
+      "pair": 96,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000563470.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\49059.jpg"
+    },
+    {
+      "pair": 97,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000573258.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\49444.jpg"
+    },
+    {
+      "pair": 98,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000575243.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\49529.jpg"
+    },
+    {
+      "pair": 99,
+      "content": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\archive\\coco_data\\images\\val2017\\000000580418.jpg",
+      "style": "D:\\Neural_Style_Transfer_using_ADAin\\NST_datasets\\train_4\\train_4\\4963.jpg"
+    }
+  ],
+  "eval_wall_seconds": 14.9,
+  "finished": "2026-10-05T17:12:04"
+}

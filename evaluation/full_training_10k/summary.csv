@@ -1,0 +1,4 @@
+checkpoint,iteration,content_loss,style_loss,style_loss_raw,total_loss,n_nonfinite_outputs,n_black_outputs,n_constant_outputs,n_range_warnings,integrity_ok,eval_set_id,inference_ms_256,peak_mem_mb_256,inference_ms_512,peak_mem_mb_512,inference_ms_1024,peak_mem_mb_1024,rank_by_total_loss
+full_training_10k_best_checkpoint,10000,1.9424167937040329,6.910500069856644,1.3821000139713289,8.852916863560676,0,0,0,15,1,80f98abb8a4f,23.12,100.3,84.04,321.1,327.51,1099.0,1
+full_training_10k_checkpoint_final,10000,1.9424167937040329,6.910500069856644,1.3821000139713289,8.852916863560676,0,0,0,15,1,80f98abb8a4f,23.15,115.3,84.2,336.4,329.27,900.2,2
+full_training_10k_checkpoint_latest,10000,1.9424167937040329,6.910500069856644,1.3821000139713289,8.852916863560676,0,0,0,15,1,80f98abb8a4f,23.21,128.8,84.52,349.6,OOM,OOM,3

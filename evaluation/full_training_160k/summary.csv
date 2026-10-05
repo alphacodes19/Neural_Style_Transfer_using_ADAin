@@ -1,0 +1,2 @@
+checkpoint,iteration,content_loss,style_loss,style_loss_raw,total_loss,n_nonfinite_outputs,n_black_outputs,n_constant_outputs,n_range_warnings,integrity_ok,eval_set_id,inference_ms_256,peak_mem_mb_256,inference_ms_512,peak_mem_mb_512,rank_by_total_loss
+full_training_160k_best_checkpoint,160000,1.4063300624489785,3.1819556576013563,0.6363911315202713,4.588285720050335,0,0,0,28,1,80f98abb8a4f,28.09,100.3,101.76,321.1,1

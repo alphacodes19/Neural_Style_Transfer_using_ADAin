@@ -1,11 +1,13 @@
 import argparse
 import contextlib
 import csv
+import json
 import math
 import os
 import random
 import sys
 import time
+from datetime import datetime
 from pathlib import Path
 
 import torch
@@ -67,6 +69,13 @@ def parse_arguments():
     parser.add_argument('--seed', type=int, default=42, help='Random seed')
     parser.add_argument('--deterministic', action='store_true', default=False,
                         help='cuDNN deterministic mode (slower; default is cudnn.benchmark=True)')
+    parser.add_argument('--cudnn_benchmark', type=str, default='on', choices=['on', 'off'],
+                        help='cudnn.benchmark autotuning (default on, unchanged). Autotuning probes '
+                             'algorithms with large temporary workspaces; --deterministic forces it off.')
+    parser.add_argument('--memory_debug', action='store_true', default=False,
+                        help='Print CUDA memory (allocated/reserved/peak, allocator retries and OOMs) at '
+                             'the main points of the first iterations, every log interval, and after '
+                             'validation and samples')
     parser.add_argument('--amp', type=str, default='off', choices=['off', 'fp16', 'bf16'],
                         help='Mixed precision on CUDA (default off). AdaIN statistics and losses '
                              'are always computed in fp32.')
@@ -87,7 +96,7 @@ def parse_arguments():
     return args
 
 
-def seed_everything(seed, deterministic):
+def seed_everything(seed, deterministic, benchmark='on'):
     random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
@@ -95,7 +104,45 @@ def seed_everything(seed, deterministic):
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
     else:
-        torch.backends.cudnn.benchmark = True
+        torch.backends.cudnn.benchmark = (benchmark == 'on')
+
+
+class MemoryProbe:
+    def __init__(self, enabled, device):
+        self.on = bool(enabled) and device.type == 'cuda'
+        self.active = True
+        self.last_retries = 0
+        self.last_ooms = 0
+
+    def __call__(self, tag, force=False):
+        if not self.on or not (self.active or force):
+            return
+        mb = 2 ** 20
+        stats = torch.cuda.memory_stats()
+        retries, ooms = stats.get('num_alloc_retries', 0), stats.get('num_ooms', 0)
+        print(f'[mem] {tag:<18} alloc {torch.cuda.memory_allocated() / mb:8.1f} MB | '
+              f'reserved {torch.cuda.memory_reserved() / mb:8.1f} MB | '
+              f'peak alloc {torch.cuda.max_memory_allocated() / mb:8.1f} MB | '
+              f'allocator retries +{retries - self.last_retries} (total {retries}) | '
+              f'OOMs +{ooms - self.last_ooms} (total {ooms})', flush=True)
+        self.last_retries, self.last_ooms = retries, ooms
+
+
+def print_memory_summary(device, iterations_run, seconds, speeds):
+    if iterations_run > 0 and seconds > 0:
+        speeds = sorted(speeds)
+        median = speeds[len(speeds) // 2] if speeds else float('nan')
+        print(f'Throughput: {iterations_run / seconds:.2f} it/s overall (includes validation, samples, '
+              f'checkpoints); median over log windows {median:.2f} it/s')
+    if device.type != 'cuda':
+        return
+    mb = 2 ** 20
+    stats = torch.cuda.memory_stats()
+    total = torch.cuda.mem_get_info()[1] / mb
+    print(f'GPU memory: peak allocated {torch.cuda.max_memory_allocated() / mb:.0f} MB | '
+          f'peak reserved {torch.cuda.max_memory_reserved() / mb:.0f} MB | device total {total:.0f} MB | '
+          f'allocator retries {stats.get("num_alloc_retries", 0)} | allocator OOMs {stats.get("num_ooms", 0)} '
+          f'| cudnn.benchmark={torch.backends.cudnn.benchmark}')
 
 
 def atomic_save(obj, path):
@@ -155,11 +202,17 @@ def adain_target(encoder, content, style, amp_dtype, device):
     return t, s_feats
 
 
-def compute_losses(encoder, decoder, content, style, args, amp_dtype, device):
+def compute_losses(encoder, decoder, content, style, args, amp_dtype, device, probe=None):
     t, s_feats = adain_target(encoder, content, style, amp_dtype, device)
+    if probe is not None:
+        probe('after_encode')
     with autocast(amp_dtype, device):
         g = decoder(t)
+        if probe is not None:
+            probe('after_decoder')
         g_feats = encoder(g)
+    if probe is not None:
+        probe('after_reencode')
     g_feats = [f.float() for f in g_feats]
 
     loss_c = F.mse_loss(g_feats[-1], t) * args.content_weight
@@ -200,7 +253,8 @@ def save_samples(encoder, decoder, fixed_content, fixed_style, path, amp_dtype, 
     decoder.train()
 
 
-def build_checkpoint(iteration, decoder, optimizer, scaler, lr, train_losses, val_losses, args):
+def build_checkpoint(iteration, decoder, optimizer, scaler, lr, train_losses, val_losses, args,
+                     best_validation=None):
     return {
         'iteration': iteration,
         'decoder': decoder.state_dict(),
@@ -210,10 +264,53 @@ def build_checkpoint(iteration, decoder, optimizer, scaler, lr, train_losses, va
         'lr': lr,
         'train_losses': train_losses,
         'val_losses': val_losses,
+        'best_validation': best_validation,
+        'best_iteration': best_validation['iteration'] if best_validation else None,
         'seed': args.seed,
         'args': dict(vars(args)),
         'torch_version': str(torch.__version__),
     }
+
+
+def is_improvement(best, total):
+    return math.isfinite(total) and (best is None or total < best['total'])
+
+
+def load_best_from_disk(save_dir):
+    try:
+        with open(Path(save_dir) / 'best_validation.json', encoding='utf-8') as f:
+            d = json.load(f)
+        best = {'iteration': int(d['best_iteration']), 'total': float(d['validation_total']),
+                'content': float(d['validation_content']), 'style': float(d['validation_style'])}
+        return best if math.isfinite(best['total']) else None
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
+def save_best_files(save_dir, ckpt, args, lr, best):
+    atomic_save(ckpt, save_dir / 'best_checkpoint.pth')
+    atomic_save(ckpt['decoder'], save_dir / 'best_decoder.pth')
+    info = {
+        'best_iteration': best['iteration'],
+        'validation_total': best['total'],
+        'validation_content': best['content'],
+        'validation_style': best['style'],
+        'content_weight': args.content_weight,
+        'style_weight': args.style_weight,
+        'learning_rate': lr,
+        'learning_rate_initial': args.lr,
+        'lr_decay': args.lr_decay,
+        'seed': args.seed,
+        'manifest_dir': args.manifest_dir,
+        'experiment': args.experiment,
+        'batch_size': args.batch_size,
+        'val_pairs': args.val_pairs,
+        'timestamp': datetime.now().isoformat(timespec='seconds'),
+    }
+    tmp = save_dir / 'best_validation.json.tmp'
+    with open(tmp, 'w', encoding='utf-8') as f:
+        json.dump(info, f, indent=2)
+    os.replace(tmp, save_dir / 'best_validation.json')
 
 
 def open_csv(path, header, append):
@@ -230,7 +327,7 @@ def main():
     args = parse_arguments()
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    seed_everything(args.seed, args.deterministic)
+    seed_everything(args.seed, args.deterministic, args.cudnn_benchmark)
 
     save_dir = Path('experiment') / args.experiment
     samples_dir = save_dir / 'samples'
@@ -320,11 +417,16 @@ def main():
 
     optimizer = optim.Adam(decoder.parameters(), lr=args.lr)
     amp_dtype, scaler = setup_amp(args.amp, device)
+    mem = MemoryProbe(args.memory_debug, device)
+    if args.memory_debug and not mem.on:
+        print('NOTE: --memory_debug needs CUDA; ignored.')
+    print(f'cudnn.benchmark={torch.backends.cudnn.benchmark}  deterministic={torch.backends.cudnn.deterministic}')
     if amp_dtype is not None:
         print(f'AMP enabled: {args.amp} (AdaIN statistics and losses stay fp32)')
 
     start_iter = 0
     last_train, last_val = None, None
+    best = None
     if ckpt is not None:
         decoder.load_state_dict(ckpt['decoder'])
         optimizer.load_state_dict(ckpt['optimizer'])
@@ -332,6 +434,12 @@ def main():
             scaler.load_state_dict(ckpt['scaler'])
         start_iter = int(ckpt['iteration'])
         last_train, last_val = ckpt.get('train_losses'), ckpt.get('val_losses')
+        in_ckpt = ckpt.get('best_validation')
+        on_disk = load_best_from_disk(save_dir)
+        candidates = [(b, src) for b, src in ((in_ckpt, 'checkpoint'), (on_disk, 'best_validation.json'))
+                      if b and math.isfinite(b['total'])]
+        if candidates:
+            best, best_src = min(candidates, key=lambda c: c[0]['total'])
         old = ckpt.get('args', {})
         changed = [f'{k}: {old[k]} -> {getattr(args, k)}' for k in RESUME_CHECK_KEYS
                    if k in old and old[k] != getattr(args, k)]
@@ -339,6 +447,14 @@ def main():
               f'(next lr = {args.lr / (1.0 + args.lr_decay * start_iter):.6g})')
         if changed:
             print('WARNING: settings differ from the checkpointed run: ' + '; '.join(changed))
+        if best is not None:
+            print(f'Best validation restored from {best_src}: total {best["total"]:.6f} '
+                  f'@ iteration {best["iteration"]}')
+            if not (save_dir / 'best_checkpoint.pth').is_file():
+                print('WARNING: best_checkpoint.pth is missing; it will only be recreated when validation '
+                      'beats the restored best.')
+        elif val_ready:
+            print('No previous best validation found; best tracking starts fresh.')
         del ckpt
         if start_iter >= args.iterations:
             print(f'Checkpoint is already at iteration {start_iter} >= --iterations {args.iterations}. '
@@ -358,24 +474,43 @@ def main():
                               ['iteration', 'total', 'content', 'style'], append=args.resume)
 
     def save_latest(done, lr):
-        ck = build_checkpoint(done, decoder, optimizer, scaler, lr, last_train, last_val, args)
+        ck = build_checkpoint(done, decoder, optimizer, scaler, lr, last_train, last_val, args, best)
         atomic_save(ck, save_dir / 'checkpoint_latest.pth')
         atomic_save(decoder.state_dict(), save_dir / 'decoder_latest.pth')
         return ck
 
-    def run_validation(done):
-        nonlocal last_val
+    def run_validation(done, lr):
+        nonlocal last_val, best
         last_val = validate(encoder, decoder, val_content_loader, val_style_loader, args, amp_dtype, device)
+        mem('after_validation', force=True)
         val_csv.writerow([done, last_val['total'], last_val['content'], last_val['style']])
         val_f.flush()
         tqdm.write(f'Validation @ iteration {done}\n'
                    f'Val Total:   {last_val["total"]:.6f}\n'
                    f'Val Content: {last_val["content"]:.6f}\n'
                    f'Val Style:   {last_val["style"]:.6f}')
+        if is_improvement(best, last_val['total']):
+            previous = best
+            best = {'iteration': done, 'total': last_val['total'],
+                    'content': last_val['content'], 'style': last_val['style']}
+            ck = build_checkpoint(done, decoder, optimizer, scaler, lr, last_train, last_val, args, best)
+            save_best_files(save_dir, ck, args, lr, best)
+            tqdm.write(f'NEW BEST @ iteration {done}:\n'
+                       f'val_total={best["total"]:.6f} (content {best["content"]:.6f}, style {best["style"]:.6f})'
+                       + (f'\nprevious best: {previous["total"]:.6f} @ iteration {previous["iteration"]}'
+                          if previous else '')
+                       + '\nSaved best_checkpoint.pth / best_decoder.pth / best_validation.json')
+        elif not math.isfinite(last_val['total']):
+            tqdm.write(f'WARNING: non-finite validation total at iteration {done}; best not updated.')
+        else:
+            tqdm.write(f'Validation did not improve.\n'
+                       f'Current: {last_val["total"]:.6f}\n'
+                       f'Best: {best["total"]:.6f} @ iteration {best["iteration"]}')
 
     def run_samples(done):
         save_samples(encoder, decoder, fixed_content, fixed_style,
                      samples_dir / f'iter_{done:07d}.png', amp_dtype, device)
+        mem('after_samples', force=True)
 
     print(f'Training iterations {start_iter + 1}..{args.iterations}')
     content_iter, style_iter = cycle(content_loader), cycle(style_loader)
@@ -385,6 +520,10 @@ def main():
     done = start_iter
     lr = args.lr / (1.0 + args.lr_decay * start_iter)
     pbar = tqdm(total=args.iterations, initial=start_iter, unit='it', dynamic_ncols=True)
+    speeds = []
+    if device.type == 'cuda':
+        torch.cuda.reset_peak_memory_stats()
+    loop_start = time.time()
 
     try:
         for it in range(start_iter, args.iterations):
@@ -395,18 +534,23 @@ def main():
             content = next(content_iter).to(device, non_blocking=True)
             style = next(style_iter).to(device, non_blocking=True)
 
-            _, loss_c, loss_s = compute_losses(encoder, decoder, content, style, args, amp_dtype, device)
+            mem.active = (it - start_iter) < 2 or (it + 1) % args.log_interval == 0
+            mem('iter_start')
+            _, loss_c, loss_s = compute_losses(encoder, decoder, content, style, args, amp_dtype, device, probe=mem)
             loss = loss_c + loss_s
 
             optimizer.zero_grad(set_to_none=True)
             if scaler is not None:
                 scaler.scale(loss).backward()
+                mem('after_backward')
                 scaler.step(optimizer)
                 scaler.update()
             else:
                 loss.backward()
+                mem('after_backward')
                 optimizer.step()
 
+            mem('after_step')
             window += torch.stack([loss.detach(), loss_c.detach(), loss_s.detach()])
             done = it + 1
             pbar.update(1)
@@ -419,6 +563,7 @@ def main():
                                              f'total={total}, content={c_avg}, style={s_avg}')
                 speed = n / max(time.time() - t_window, 1e-9)
                 last_train = {'total': total, 'content': c_avg, 'style': s_avg}
+                speeds.append(speed)
                 tqdm.write(f'Iteration {done}\n'
                            f'Total: {total:.6f}\n'
                            f'Content: {c_avg:.6f}\n'
@@ -432,7 +577,7 @@ def main():
                 t_window = time.time()
 
             if val_ready and done % args.val_interval == 0:
-                run_validation(done)
+                run_validation(done, lr)
             if val_ready and done % args.sample_interval == 0:
                 run_samples(done)
             if done % args.save_interval == 0:
@@ -450,9 +595,10 @@ def main():
     pbar.close()
 
     if val_ready and args.iterations % args.val_interval != 0:
-        run_validation(done)
+        run_validation(done, lr)
     if val_ready and args.iterations % args.sample_interval != 0:
         run_samples(done)
+    loop_seconds = time.time() - loop_start
     ck = save_latest(done, lr)
     atomic_save(ck, save_dir / 'checkpoint_final.pth')
     atomic_save(decoder.state_dict(), save_dir / 'decoder_final.pth')
@@ -460,6 +606,10 @@ def main():
     val_f.close()
     print(f'Finished {done} iterations. Saved final checkpoint to {save_dir / "checkpoint_final.pth"} '
           f'and decoder to {save_dir / "decoder_final.pth"}')
+    print_memory_summary(device, done - start_iter, loop_seconds, speeds)
+    if best is not None:
+        print(f'Best validation: total {best["total"]:.6f} @ iteration {best["iteration"]} '
+              f'(see {save_dir / "best_checkpoint.pth"} and best_validation.json)')
 
 
 if __name__ == '__main__':
